@@ -11,9 +11,6 @@ export const expenseSchema = z.object({
     amount: z.number().describe("Amount of the expense in INR."),
     date: z.string().describe("Date of the expense, in YYYY-MM-DD format."),
     details: z.string().describe("Name of the product or service."),
-    participants: z
-      .array(z.string())
-      .describe("Participants in the expense, as usernames."),
   }),
 });
 

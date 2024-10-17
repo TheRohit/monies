@@ -1,4 +1,4 @@
-import { saveExpense } from "@/app/actions/save-to-db";
+import { saveExpense } from "@/app/actions/expenses";
 import { expenseSchema } from "@/lib/schema";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamObject } from "ai";
@@ -38,9 +38,8 @@ export async function POST(req: Request) {
         await saveExpense({
           amount: object.expense.amount,
           category: object.expense.category,
-          date: new Date(object.expense.date),
+          date: object.expense.date,
           details: object.expense.details,
-          participants: object.expense.participants,
         });
       } catch (error) {
         console.error("Failed to save expense:", error);

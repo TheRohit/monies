@@ -24,6 +24,7 @@
     "babel-plugin-react-compiler": "^0.0.0-experimental-fa06e2c-20241016",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "drizzle-kit": "^0.26.2",
     "drizzle-orm": "^0.35.1",
     "framer-motion": "12.0.0-alpha.1",
