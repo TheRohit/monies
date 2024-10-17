@@ -2,10 +2,26 @@
 /* eslint-disable react/jsx-key */
 "use client";
 
-import { Expense, expenseSchema, PartialExpense } from "@/lib/schema";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Expense,
+  expenseSchema,
+  InputExpense,
+  inputExpenseSchema,
+  PartialExpense,
+} from "@/lib/schema";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { experimental_useObject } from "ai/react";
 import { motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 const ExpenseView = ({ expense }: { expense: Expense | PartialExpense }) => {
@@ -43,10 +59,20 @@ const ExpenseView = ({ expense }: { expense: Expense | PartialExpense }) => {
 };
 
 export default function Home() {
-  const [input, setInput] = useState<string>("");
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const handleOnSubmit = (data: InputExpense) => {
+    if (data.expense.trim()) {
+      submit({ expense: data.expense });
+    }
+  };
+
+  const form = useForm<InputExpense>({
+    resolver: zodResolver(inputExpenseSchema),
+    defaultValues: {
+      expense: "",
+    },
+  });
 
   const { submit, isLoading, object } = experimental_useObject({
     api: "/api/chat",
@@ -54,8 +80,8 @@ export default function Home() {
     onFinish({ object }) {
       if (object != null) {
         setExpenses((prev) => [object.expense, ...prev]);
-        setInput("");
-        inputRef.current?.focus();
+        form.reset();
+        form.setFocus("expense");
       }
     },
     onError: () => {
@@ -66,36 +92,31 @@ export default function Home() {
   return (
     <div className="flex flex-row justify-center pt-20 h-dvh bg-white dark:bg-zinc-900">
       <div className="flex flex-col justify-between gap-4">
-        <form
-          className="flex flex-col gap-2 relative items-center"
-          onSubmit={(event) => {
-            event.preventDefault();
+        <Form {...form}>
+          <form
+            className="flex flex-col gap-2 relative items-center"
+            onSubmit={form.handleSubmit(handleOnSubmit)}
+          >
+            <FormField
+              control={form.control}
+              name="expense"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      className="bg-zinc-100 rounded-md px-2 py-1.5 w-full outline-none dark:bg-zinc-700 text-zinc-800 dark:text-zinc-300 md:max-w-[500px] max-w-[calc(100dvw-32px)] disabled:text-zinc-400 disabled:cursor-not-allowed placeholder:text-zinc-400"
+                      placeholder="Expense a transaction..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
 
-            const form = event.target as HTMLFormElement;
-
-            const input = form.elements.namedItem(
-              "expense"
-            ) as HTMLInputElement;
-
-            if (input.value.trim()) {
-              submit({ expense: input.value });
-            }
-          }}
-        >
-          <input
-            name="expense"
-            className="bg-zinc-100 rounded-md px-2 py-1.5 w-full outline-none dark:bg-zinc-700 text-zinc-800 dark:text-zinc-300 md:max-w-[500px] max-w-[calc(100dvw-32px)] disabled:text-zinc-400 disabled:cursor-not-allowed placeholder:text-zinc-400"
-            placeholder="Expense a transaction..."
-            value={input}
-            onChange={(event) => {
-              setInput(event.target.value);
-            }}
-            disabled={isLoading}
-            ref={inputRef}
-          />
-        </form>
-
-        {expenses.length > 0 || isLoading ? (
+        {expenses?.length > 0 || isLoading ? (
           <div className="flex flex-col gap-2 h-full w-dvw items-center">
             {isLoading && object?.expense && (
               <div className="opacity-50">
@@ -103,12 +124,16 @@ export default function Home() {
               </div>
             )}
 
-            {expenses.map((expense) => (
+            {expenses?.map((expense) => (
               <ExpenseView key={`${expense.details}`} expense={expense} />
             ))}
           </div>
         ) : (
-          <></>
+          <div className="flex flex-col gap-2 h-full w-dvw items-center">
+            <div className="text-zinc-400 dark:text-zinc-400">
+              No expenses yet!
+            </div>
+          </div>
         )}
       </div>
     </div>

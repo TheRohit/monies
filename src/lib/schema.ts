@@ -8,8 +8,8 @@ export const expenseSchema = z.object({
       .describe(
         "Category of the expense. Allowed categories: TRAVEL, MEALS, ENTERTAINMENT, OFFICE SUPPLIES, OTHER."
       ),
-    amount: z.number().describe("Amount of the expense in USD."),
-    date: z.string().describe("Date of the expense, in dd-MMM format."),
+    amount: z.number().describe("Amount of the expense in INR."),
+    date: z.string().describe("Date of the expense, in YYYY-MM-DD format."),
     details: z.string().describe("Name of the product or service."),
     participants: z
       .array(z.string())
@@ -21,3 +21,9 @@ export const expenseSchema = z.object({
 export type PartialExpense = DeepPartial<typeof expenseSchema>["expense"];
 
 export type Expense = z.infer<typeof expenseSchema>["expense"];
+
+export const inputExpenseSchema = z.object({
+  expense: z.string().describe("A string describing the expense"),
+});
+
+export type InputExpense = z.infer<typeof inputExpenseSchema>;
