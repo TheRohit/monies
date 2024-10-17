@@ -1,3 +1,4 @@
+import { saveExpense } from "@/app/actions/save-to-db";
 import { expenseSchema } from "@/lib/schema";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamObject } from "ai";
@@ -30,7 +31,21 @@ export async function POST(req: Request) {
     prompt: `Please categorize the following expense: "${expense}"`,
     schema: expenseSchema,
     onFinish: async ({ object }) => {
-      console.log(object);
+      try {
+        if (!object) {
+          return;
+        }
+        await saveExpense({
+          amount: object.expense.amount,
+          category: object.expense.category,
+          date: new Date(object.expense.date),
+          details: object.expense.details,
+          participants: object.expense.participants,
+        });
+      } catch (error) {
+        console.error("Failed to save expense:", error);
+        throw new Error("Failed to save expense");
+      }
     },
   });
 
