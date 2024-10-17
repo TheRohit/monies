@@ -24,11 +24,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export default function HomeClient({
-  initialExpenses,
-}: {
-  initialExpenses: Expense[];
-}) {
+export default function HomeClient() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const handleOnSubmit = (data: InputExpense) => {
