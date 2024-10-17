@@ -9,18 +9,24 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.67",
     "@radix-ui/react-icons": "^1.3.0",
     "@vercel/functions": "^1.4.2",
+    "ai": "^3.4.13",
     "babel-plugin-react-compiler": "^0.0.0-experimental-fa06e2c-20241016",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "framer-motion": "12.0.0-alpha.1",
     "lucide-react": "^0.453.0",
     "next": "^15.0.0-rc.1",
+    "next-safe-action": "^7.9.4",
     "next-themes": "^0.3.0",
     "react": "^19.0.0-rc-77b637d6-20241016",
     "react-dom": "^19.0.0-rc-77b637d6-20241016",
+    "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "typescript": "^5",
