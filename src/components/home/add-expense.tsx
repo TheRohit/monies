@@ -19,6 +19,7 @@ import {
 } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { experimental_useObject as useObject } from "ai/react";
+import { formatDate } from "date-fns";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,8 +45,13 @@ export default function AddExpense({ data }: { data: Expense[] }) {
     api: "/api/chat",
     schema: expenseSchema,
     onFinish({ object }) {
+      const currentDateTime = new Date().toISOString();
       if (object != null) {
-        setExpenses((prev) => [object.expense, ...prev]);
+        const expense = {
+          ...object.expense,
+          date: currentDateTime,
+        };
+        setExpenses((prev) => [expense, ...prev]);
         form.reset();
         form.setFocus("expense");
       }
@@ -67,7 +73,9 @@ export default function AddExpense({ data }: { data: Expense[] }) {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
-                      autoComplete="false"
+                      id="expense"
+                      type="text"
+                      autoComplete="off"
                       spellCheck="false"
                       placeholder="Expense a transaction..."
                       {...field}
@@ -91,7 +99,10 @@ export default function AddExpense({ data }: { data: Expense[] }) {
             )}
 
             {expenses?.map((expense) => (
-              <ExpenseView key={`${expense.details}`} expense={expense} />
+              <ExpenseView
+                key={`${expense.date}-${expense.details}`}
+                expense={expense}
+              />
             ))}
           </div>
         ) : (
@@ -116,9 +127,9 @@ const ExpenseView = ({ expense }: { expense: Expense | PartialExpense }) => {
       <div className="flex flex-col sm:flex-row gap-2 w-full ">
         <div className="flex-1 flex flex-row gap-2 items-center min-w-0">
           <div className="text-zinc-400 dark:text-zinc-400 shrink-0 w-16">
-            {expense?.date}
+            {expense?.date && formatDate(expense.date, "dd MMM")}
           </div>
-          <div className="text-zinc-800 dark:text-zinc-300 truncate ">
+          <div className="text-zinc-800 dark:text-zinc-300 truncate capitalize">
             {expense?.details}
           </div>
         </div>

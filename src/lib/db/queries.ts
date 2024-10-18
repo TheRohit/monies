@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import { ExpensesTable } from "../../../drizzle/schema";
 import { db } from "../../../drizzle/db";
+import { ExpensesTable } from "../../../drizzle/schema";
 
 export const getExpensesForUser = async (userId: string) => {
   const expenses = await db
@@ -9,5 +9,8 @@ export const getExpensesForUser = async (userId: string) => {
     .where(sql`${ExpensesTable.userId} = ${userId}`)
     .orderBy(sql`${ExpensesTable.date} DESC`);
 
-  return expenses;
+  return expenses.map((expense) => ({
+    ...expense,
+    date: expense.date.toISOString(),
+  }));
 };

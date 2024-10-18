@@ -9,7 +9,7 @@ export const expenseSchema = z.object({
         "Predefined category of the expense. Must be one of: TRAVEL, MEALS, ENTERTAINMENT, OFFICE SUPPLIES, UTILITIES, RENT, GROCERIES, HEALTHCARE, EDUCATION, CLOTHING, TRANSPORTATION, or OTHER. Used for expense classification and detailed financial reporting."
       ),
     amount: z.number().describe("Amount of the expense in INR."),
-    date: z.string().describe("Date of the expense, in DD-MMM format."),
+    date: z.string().describe("Date of the expense, in YYYY-MM-DD format."),
     details: z
       .string()
       .describe(
