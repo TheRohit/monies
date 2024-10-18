@@ -6,11 +6,15 @@ export const expenseSchema = z.object({
     category: z
       .string()
       .describe(
-        "Category of the expense. Allowed categories: TRAVEL, MEALS, ENTERTAINMENT, OFFICE SUPPLIES, OTHER."
+        "Predefined category of the expense. Must be one of: TRAVEL, MEALS, ENTERTAINMENT, OFFICE SUPPLIES, UTILITIES, RENT, GROCERIES, HEALTHCARE, EDUCATION, CLOTHING, TRANSPORTATION, or OTHER. Used for expense classification and detailed financial reporting."
       ),
     amount: z.number().describe("Amount of the expense in INR."),
-    date: z.string().describe("Date of the expense, in YYYY-MM-DD format."),
-    details: z.string().describe("Name of the product or service."),
+    date: z.string().describe("Date of the expense, in DD-MMM format."),
+    details: z
+      .string()
+      .describe(
+        "Name of the product or service. Note: Proper formatting should be applied, e.g., 'iPhone' instead of 'Iphone'."
+      ),
   }),
 });
 

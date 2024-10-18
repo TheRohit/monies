@@ -17,7 +17,7 @@ export default async function HomeServer() {
 
   return (
     <div className="container mx-auto px-4 py-8 flex justify-between">
-      <div className="w-full max-w-[600px] h-[220px] relative overflow-hidden border border-zinc-200 dark:border-zinc-800 rounded-md">
+      <div className="w-full max-w-[500px] h-[220px] relative overflow-hidden border border-zinc-200 dark:border-zinc-800 rounded-md">
         <div className="absolute inset-0 p-2  overflow-y-auto">
           <AddExpense data={formattedExpenses} />
         </div>

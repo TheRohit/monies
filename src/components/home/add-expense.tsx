@@ -109,16 +109,16 @@ export default function AddExpense({ data }: { data: Expense[] }) {
 const ExpenseView = ({ expense }: { expense: Expense | PartialExpense }) => {
   return (
     <motion.div
-      className="flex flex-col gap-2 px-4 w-full md:w-[500px] md:px-0"
+      className="flex flex-col gap-2 px-4 w-full"
       initial={{ opacity: 0.4 }}
       animate={{ opacity: 1 }}
     >
-      <div className="flex flex-col sm:flex-row gap-2 w-full">
+      <div className="flex flex-col sm:flex-row gap-2 w-full ">
         <div className="flex-1 flex flex-row gap-2 items-center min-w-0">
-          <div className="text-zinc-400 dark:text-zinc-400 shrink-0">
+          <div className="text-zinc-400 dark:text-zinc-400 shrink-0 w-16">
             {expense?.date}
           </div>
-          <div className="text-zinc-800 dark:text-zinc-300 capitalize truncate">
+          <div className="text-zinc-800 dark:text-zinc-300 truncate">
             {expense?.details}
           </div>
         </div>
