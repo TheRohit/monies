@@ -1,0 +1,1 @@
+ALTER TABLE "expenses" ALTER COLUMN "date" SET DATA TYPE timestamp (3) with time zone;

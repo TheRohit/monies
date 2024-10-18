@@ -6,7 +6,8 @@ export const getExpensesForUser = async (userId: string) => {
   const expenses = await db
     .select()
     .from(ExpensesTable)
-    .where(sql`${ExpensesTable.userId} = ${userId}`);
+    .where(sql`${ExpensesTable.userId} = ${userId}`)
+    .orderBy(sql`${ExpensesTable.date} DESC`);
 
   return expenses;
 };

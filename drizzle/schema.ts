@@ -14,7 +14,7 @@ export const ExpensesTable = pgTable(
     userId: text("user_id").notNull(),
     category: text("category").notNull(),
     amount: integer("amount").notNull(),
-    date: timestamp("date").notNull(),
+    date: timestamp("date", { precision: 3, withTimezone: true }).notNull(),
     details: text("details").notNull(),
   },
   (table) => ({

@@ -5,14 +5,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "../../../drizzle/db";
 import { ExpensesTable } from "../../../drizzle/schema";
-import { format } from "date-fns";
 
 const ExpenseSchema = z.object({
   category: z.string().min(1, "Category is required"),
   amount: z.number().int().positive("Amount must be a positive integer"),
-  date: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: "Invalid date format",
-  }),
+  date: z.string().datetime(),
   details: z.string().optional(),
 });
 
@@ -25,7 +22,8 @@ export const saveExpense = authActionClient
         .insert(ExpensesTable)
         .values({
           userId,
-          ...parsedInput,
+          category: parsedInput.category,
+          amount: parsedInput.amount,
           date: new Date(parsedInput.date),
           details: parsedInput.details || "",
         })
@@ -36,7 +34,7 @@ export const saveExpense = authActionClient
         success: true,
         expense: {
           ...expense,
-          date: format(expense.date, "yyyy-MMM-dd"),
+          date: expense.date.toISOString(),
         },
       };
     } catch (error) {

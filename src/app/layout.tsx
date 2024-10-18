@@ -1,11 +1,6 @@
+import { MainNav } from "@/components/home/main-nav";
 import { ThemeProvider } from "@/components/theme-provider";
-import {
-  ClerkProvider,
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -38,17 +33,14 @@ export default function RootLayout({
         >
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-            {children}
+            <div className="bg-white dark:bg-zinc-900 grid h-screen grid-rows-[auto,1fr] font-[family-name:var(--font-geist-sans)]">
+              <MainNav />
+              <main className="overflow-y-scroll ">{children}</main>
+            </div>
           </ThemeProvider>
         </body>
       </html>
