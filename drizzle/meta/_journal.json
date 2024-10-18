@@ -29,6 +29,41 @@
       "when": 1729249105783,
       "tag": "0003_outstanding_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1729254660069,
+      "tag": "0004_small_celestials",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1729268939383,
+      "tag": "0005_shiny_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1729269597564,
+      "tag": "0006_great_ronan",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1729269785354,
+      "tag": "0007_eager_solo",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1729270262984,
+      "tag": "0008_silly_wild_pack",
+      "breakpoints": true
     }
   ]
 }
