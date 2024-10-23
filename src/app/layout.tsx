@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <Toaster />
             <div className="bg-white dark:bg-zinc-900 grid h-screen grid-rows-[auto,1fr] font-[family-name:var(--font-geist-sans)]">
               <MainNav />
               <main className="overflow-y-scroll ">{children}</main>
