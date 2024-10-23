@@ -42,57 +42,45 @@ export const extractEMIDataAction = authActionClient
   .metadata({ actionName: "extractEMIData" })
   .schema(InputSchema)
   .action(async ({ parsedInput }) => {
-    try {
-      const { parsedPdf } = parsedInput;
-      const groq = createOpenAI({
-        baseURL: "https://api.groq.com/openai/v1",
-        apiKey: process.env.GROQ_API_KEY!,
-      });
+    const { parsedPdf } = parsedInput;
+    const groq = createOpenAI({
+      baseURL: "https://api.groq.com/openai/v1",
+      apiKey: process.env.GROQ_API_KEY!,
+    });
 
-      const today = new Date();
+    const today = new Date();
 
-      const { object } = await generateObject({
-        model: groq("llama-3.1-70b-versatile"),
-        prompt: `Extract EMI data from the following PDF text. Include an array of installments with due date, principal, and interest for each. Today's date is ${
-          today.toISOString().split("T")[0]
-        }. 
-        
-        PDF Text:
-        ${parsedPdf}`,
-        schema: EMISchema,
-        temperature: 0.2,
-      });
+    const { object } = await generateObject({
+      model: groq("llama-3.1-70b-versatile"),
+      prompt: `Extract EMI data from the following PDF text. Include an array of installments with due date, principal, and interest for each. Today's date is ${
+        today.toISOString().split("T")[0]
+      }. 
+      
+      PDF Text:
+      ${parsedPdf}`,
+      schema: EMISchema,
+      temperature: 0.2,
+    });
 
-      const paidInstallments = _.takeWhile(
-        object.installments,
-        (installment) => new Date(installment.dueDate) < today
-      );
+    const paidInstallments = _.takeWhile(
+      object.installments,
+      (installment) => new Date(installment.dueDate) < today
+    );
 
-      const principalPaid = _.sumBy(paidInstallments, "principal");
+    const principalPaid = _.sumBy(paidInstallments, "principal");
 
-      const emiData: EMIData = {
-        ...object,
-        principalPaid: _.round(principalPaid, 2),
-        installmentsPaid: paidInstallments.length,
-        remainingInstallments:
-          object.installments.length - paidInstallments.length,
-        remainingPrincipal: _.round(object.totalAmount - principalPaid, 2),
-        startDate: new Date(object.startDate).toISOString(),
-        endDate: new Date(object.endDate).toISOString(),
-      };
+    const emiData: EMIData = {
+      ...object,
+      principalPaid: _.round(principalPaid, 2),
+      installmentsPaid: paidInstallments.length,
+      remainingInstallments:
+        object.installments.length - paidInstallments.length,
+      remainingPrincipal: _.round(object.totalAmount - principalPaid, 2),
+      startDate: new Date(object.startDate).toISOString(),
+      endDate: new Date(object.endDate).toISOString(),
+    };
 
-      revalidatePath("/emi");
+    revalidatePath("/emi");
 
-      return {
-        success: true,
-        emiData,
-      };
-    } catch (error) {
-      console.error("Failed to extract EMI data:", error);
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Failed to extract EMI data",
-      };
-    }
+    return emiData;
   });

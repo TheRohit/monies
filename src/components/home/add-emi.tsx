@@ -19,13 +19,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "next-safe-action/hooks";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export default function EMIForm() {
-  const { executeAsync, isPending, hasErrored } = useAction(saveEMI);
+  const { executeAsync, isPending, hasErrored } = useAction(saveEMI, {
+    onSuccess: () => {
+      toast.success("EMI saved successfully");
+      form.reset();
+    },
+    onError: (error) => {
+      toast.error(error.error.serverError || "Something went wrong");
+    },
+  });
 
   const form = useForm<EMISchemaType>({
     resolver: zodResolver(EMISchema),
@@ -48,14 +57,7 @@ export default function EMIForm() {
       endDate: data.endDate ? new Date(data.endDate).toISOString() : "",
     };
 
-    const result = await executeAsync(formattedData);
-    if (result) {
-      toast({
-        title: "EMI Saved",
-        description: "Your EMI has been successfully saved.",
-      });
-      form.reset();
-    }
+    await executeAsync(formattedData);
   };
 
   return (
