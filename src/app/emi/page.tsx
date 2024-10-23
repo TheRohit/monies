@@ -1,10 +1,19 @@
-import EMIForm from "@/components/home/add-emi";
-import React from "react";
+import EMIDashboard from "@/components/emi/emi-dashboard";
+import { getEMIsForUser } from "@/lib/db/queries";
+import { auth } from "@clerk/nextjs/server";
+import React, { Suspense } from "react";
 
-export default function Page() {
+export default async function Page() {
+  const { userId } = auth();
+  if (!userId) {
+    return;
+  }
+  const emis = await getEMIsForUser(userId);
   return (
-    <div>
-      <EMIForm />
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="overflow-hidden p-5 h-[calc(100vh-64px)] flex">
+        <EMIDashboard data={emis} />
+      </div>
+    </Suspense>
   );
 }

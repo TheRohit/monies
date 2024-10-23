@@ -65,7 +65,7 @@ export default function AddExpense({ data }: { data: Expense[] }) {
   });
 
   return (
-    <div className="overflow-hidden p-5 h-[calc(100vh-64px)] flex w-screen">
+    <div className="overflow-hidden p-5 h-[calc(100vh-64px)] flex">
       <Tabs defaultValue="overview" className="h-full w-full space-y-6">
         <div className="space-between flex items-center">
           <TabsList>
@@ -74,11 +74,11 @@ export default function AddExpense({ data }: { data: Expense[] }) {
           </TabsList>
         </div>
         <TabsContent value="overview" className="space-y-2">
-          <Card className="col-span-4">
+          <Card className="col-span-4 ">
             <CardHeader>
               <CardTitle>Expense Overview</CardTitle>
             </CardHeader>
-            <CardContent className="flex gap-4">
+            <CardContent className="flex gap-4 ">
               <ExpenseOverview
                 object={object}
                 form={form}
@@ -86,7 +86,7 @@ export default function AddExpense({ data }: { data: Expense[] }) {
                 expenses={expenses}
                 isLoading={isLoading}
               />
-              <div>
+              <div className="w-2/3">
                 <Card>
                   <CardHeader>
                     <CardTitle>Recent Transactions</CardTitle>
@@ -176,7 +176,7 @@ const ExpenseOverview = ({
   object: any;
 }) => {
   return (
-    <div className="flex flex-col w-[500px] bg-white dark:bg-zinc-900 h-full rounded-lg p-3">
+    <div className="flex flex-col w-1/3 bg-white dark:bg-zinc-900 rounded-lg p-3">
       <div className="sticky top-0 bg-white dark:bg-zinc-900 z-10 pb-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
@@ -203,7 +203,7 @@ const ExpenseOverview = ({
         </Form>
       </div>
 
-      <ScrollArea className="h-[440px] ">
+      <ScrollArea className="h-[calc(100vh-320px)]">
         {expenses?.length > 0 || isLoading ? (
           <div className="flex flex-col gap-2 items-center ">
             {isLoading && object?.expense && (
@@ -235,7 +235,7 @@ const ExpenseOverview = ({
 const ExpenseView = ({ expense }: { expense: Expense | PartialExpense }) => {
   return (
     <motion.div
-      className="flex flex-col gap-2 px-4 w-[500px]"
+      className="flex flex-col gap-2 px-4 w-full min-w-full"
       initial={{ opacity: 0.4 }}
       animate={{ opacity: 1 }}
     >
