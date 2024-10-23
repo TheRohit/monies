@@ -3,7 +3,7 @@ import { getExpensesForUser } from "@/lib/db/queries";
 import { auth } from "@clerk/nextjs/server";
 
 export default async function HomeServer() {
-  const userId = auth().userId;
+  const userId = (await auth()).userId;
   if (!userId) {
     return <div>Loading...</div>;
   }
