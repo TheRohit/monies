@@ -1,11 +1,10 @@
 "use server";
 
 import { authActionClient } from "@/lib/safe-action";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "../../../drizzle/db";
 import { ExpensesTable } from "../../../drizzle/schema";
-
+import "server-only";
 const ExpenseSchema = z.object({
   category: z.string().min(1, "Category is required"),
   amount: z.number().int().positive("Amount must be a positive integer"),
@@ -27,8 +26,6 @@ export const saveExpense = authActionClient
         details: parsedInput.details || "",
       })
       .returning();
-
-    revalidatePath("/expenses");
     return {
       ...expense,
       date: expense.date.toISOString(),
