@@ -1,3 +1,5 @@
+import { EMIData, extractEMIDataAction } from "@/app/actions/extract-emi-data";
+import { parsePDFAction } from "@/app/actions/parse-pdf";
 import {
   Dialog,
   DialogContent,
@@ -7,55 +9,47 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useDisclosure } from "@/hooks/use-disclosure";
 import { useToast } from "@/hooks/use-toast";
 import { UploadCloud } from "lucide-react";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 export function UploadModal({
-  onFileUpload,
-  setParsedText,
-  password,
   maxSize,
+  setEMIData,
 }: {
-  onFileUpload: (file: File) => void;
-  setParsedText: (text: string) => void;
-  password?: string;
+  setEMIData: (emiData: EMIData) => void;
   maxSize?: number;
 }) {
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const uploadFileToApi = async (file: File) => {
-    const formData = new FormData();
-    formData.append("FILE", file);
-    if (password) {
-      formData.append("password", password);
-    }
-
-    try {
-      const response = await fetch("/api/parse", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
+  const {
+    executeAsync: extractEMIData,
+    isPending: isExtractingEMIDataPending,
+  } = useAction(extractEMIDataAction, {
+    onSuccess: (data) => {
+      if (data.data?.emiData) {
+        setEMIData(data.data.emiData);
       }
+      close();
+    },
+  });
 
-      const parsedText = await response.text();
-      setParsedText(parsedText);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Upload Failed",
-        description: (error as Error).message,
-      });
-    }
-  };
+  const { executeAsync, isPending } = useAction(parsePDFAction, {
+    onSuccess: async (data) => {
+      if (data.data?.parsedText) {
+        await extractEMIData({ parsedPdf: data.data.parsedText });
+      }
+    },
+  });
 
+  const [opened, { close, toggle }] = useDisclosure(false);
+  const [password, setPassword] = useState("");
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 1) {
       setSelectedFile(acceptedFiles[0]);
@@ -70,14 +64,7 @@ export function UploadModal({
 
   const handleUpload = async () => {
     if (selectedFile) {
-      onFileUpload(selectedFile);
-      await uploadFileToApi(selectedFile);
-    } else {
-      toast({
-        variant: "destructive",
-        title: "No file selected",
-        description: "Please select a PDF file before uploading.",
-      });
+      await executeAsync({ file: selectedFile, password });
     }
   };
 
@@ -89,8 +76,15 @@ export function UploadModal({
     maxSize: maxSize,
     multiple: false,
   });
+
+  const onOpenChange = () => {
+    toggle();
+    setTimeout(() => {
+      setSelectedFile(null);
+    }, 100);
+  };
   return (
-    <Dialog>
+    <Dialog open={opened} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline">Upload File</Button>
       </DialogTrigger>
@@ -99,11 +93,11 @@ export function UploadModal({
           <DialogTitle>Upload File</DialogTitle>
           <DialogDescription>Upload a file to get started.</DialogDescription>
         </DialogHeader>
-        <div>
+        <div className="flex flex-col gap-4">
           <div>
             <label
               {...getRootProps()}
-              className="relative flex flex-col items-center justify-center w-full py-6 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="relative flex flex-col items-center justify-center w-full py-6 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-zinc-700"
             >
               <div className="text-center">
                 <div className="border p-2 rounded-md max-w-min mx-auto dark:border-gray-600">
@@ -112,14 +106,23 @@ export function UploadModal({
                     className="text-gray-600 dark:text-gray-300"
                   />
                 </div>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-semibold">
-                    Drag and drop a PDF file
-                  </span>
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Click to select a file (file should be under 8 MB)
-                </p>
+
+                {selectedFile ? (
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                    <span className="font-semibold">{selectedFile.name}</span>
+                  </p>
+                ) : (
+                  <>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                      <span className="font-semibold">
+                        Drag and drop a PDF file
+                      </span>
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Click to select a file (file should be under 2 MB)
+                    </p>
+                  </>
+                )}
               </div>
             </label>
             <Input
@@ -130,9 +133,26 @@ export function UploadModal({
               className="hidden"
             />
           </div>
+          {!selectedFile && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">Enter password (Optional)</Label>
+              <Input
+                id="password"
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+              />
+            </div>
+          )}
         </div>
         <DialogFooter>
-          <Button onClick={handleUpload} type="submit">
+          <Button
+            isLoading={isPending || isExtractingEMIDataPending}
+            disabled={selectedFile === null}
+            onClick={handleUpload}
+            type="submit"
+          >
             Upload
           </Button>
         </DialogFooter>
