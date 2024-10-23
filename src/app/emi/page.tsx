@@ -5,6 +5,7 @@ import EMIForm from "@/components/home/add-emi";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
 import { extractEMIDataAction } from "../actions/extract-emi-data";
+import { UploadModal } from "@/components/upload-modal";
 
 export default function Page() {
   const { toast } = useToast();
@@ -32,10 +33,9 @@ export default function Page() {
   return (
     <div>
       {/* <EMIForm /> */}
-      <FileUpload
+      <UploadModal
         onFileUpload={handleFileUpload}
         setParsedText={handleParsedText}
-        maxSize={8 * 1024 * 1024} // 8 MB
       />
     </div>
   );
