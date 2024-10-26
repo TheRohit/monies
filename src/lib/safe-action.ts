@@ -38,7 +38,7 @@ const actionClient = createSafeActionClient({
 });
 
 export const authActionClient = actionClient.use(async ({ next }) => {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     throw new ActionError("Unauthorized: User not authenticated");

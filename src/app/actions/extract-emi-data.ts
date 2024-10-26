@@ -1,95 +1,86 @@
 "use server";
 
 import { authActionClient } from "@/lib/safe-action";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
-import { extractTextFromPDF } from "@/lib/pdf-utils";
+import _ from "lodash";
+import { revalidatePath } from "next/cache";
+import "server-only";
+import { z } from "zod";
 
 const EMISchema = z.object({
-  emiName: z.string().min(1, "EMI name is required"),
-  totalAmount: z.number().positive("Total amount must be positive"),
-  amountPaid: z.number().nonnegative("Amount paid must be non-negative"),
-  monthlyEmiAmount: z.number().positive("Monthly EMI amount must be positive"),
-  monthlyDueDate: z
-    .number()
-    .min(1)
-    .max(31, "Monthly due date must be between 1 and 31"),
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime(),
-  interestRate: z.number().nonnegative("Interest rate must be non-negative"),
+  emiName: z.string().describe("Name of the loan"),
+  totalAmount: z.number().describe("Total amount of the loan"),
+  monthlyEmiAmount: z.number().describe("Monthly EMI amount"),
+  monthlyDueDate: z.number().min(1).max(31).describe("Monthly due date"),
+  startDate: z.string().describe("Start date of the loan"),
+  endDate: z.string().describe("End date of the loan"),
+  interestRate: z.number().describe("Annual interest rate of the loan"),
+  installments: z
+    .array(
+      z.object({
+        dueDate: z.string(),
+        principal: z.number(),
+        interest: z.number(),
+      })
+    )
+    .describe("Array of installments with due date, principal, and interest"),
 });
 
-const ExtractEMIDataSchema = z.object({
-  pdfFile: z.instanceof(Buffer),
-  password: z.string().optional(),
+const InputSchema = z.object({
+  parsedPdf: z.string(),
 });
+
+export type EMIData = z.infer<typeof EMISchema> & {
+  principalPaid: number;
+  installmentsPaid: number;
+  remainingInstallments: number;
+  remainingPrincipal: number;
+};
 
 export const extractEMIDataAction = authActionClient
   .metadata({ actionName: "extractEMIData" })
-  .schema(ExtractEMIDataSchema)
+  .schema(InputSchema)
   .action(async ({ parsedInput }) => {
-    try {
-      const pdfText = await extractTextFromPDF(
-        parsedInput.pdfFile,
-        parsedInput.password
-      );
+    const { parsedPdf } = parsedInput;
+    const groq = createOpenAI({
+      baseURL: "https://api.groq.com/openai/v1",
+      apiKey: process.env.GROQ_API_KEY!,
+    });
 
-      const groq = createOpenAI({
-        baseURL: "https://api.groq.com/openai/v1",
-        apiKey: process.env.GROQ_API_KEY!,
-      });
+    const today = new Date();
 
-      const today = new Date().toISOString().split("T")[0];
+    const { object } = await generateObject({
+      model: groq("llama-3.1-70b-versatile"),
+      prompt: `Extract EMI data from the following PDF text. Include an array of installments with due date, principal, and interest for each. Today's date is ${
+        today.toISOString().split("T")[0]
+      }. 
+      
+      PDF Text:
+      ${parsedPdf}`,
+      schema: EMISchema,
+      temperature: 0.2,
+    });
 
-      const { object } = await generateObject({
-        model: groq("llama-3.1-70b-versatile"),
-        prompt: `You are an AI assistant specialized in extracting EMI (Equated Monthly Installment) data from PDF text. Extract the required information and calculate derived values as needed. Here are the instructions:
+    const paidInstallments = _.takeWhile(
+      object.installments,
+      (installment) => new Date(installment.dueDate) < today
+    );
 
-        Extract the following EMI data from the given PDF text:
-        1. EMI Name (loan name or description)
-        2. Total Amount (total loan amount)
-        3. Monthly EMI Amount
-        4. Monthly Due Date (as a number, 1-31)
-        5. Start Date (in YYYY-MM-DD format)
-        6. End Date (in YYYY-MM-DD format)
-        7. Annual Interest Rate
+    const principalPaid = _.sumBy(paidInstallments, "principal");
 
-        Also, calculate:
-        8. Amount Paid (sum of principal amounts paid up to the current date)
-        9. Monthly Interest Rate (annual rate divided by 12)
+    const emiData: EMIData = {
+      ...object,
+      principalPaid: _.round(principalPaid, 2),
+      installmentsPaid: paidInstallments.length,
+      remainingInstallments:
+        object.installments.length - paidInstallments.length,
+      remainingPrincipal: _.round(object.totalAmount - principalPaid, 2),
+      startDate: new Date(object.startDate).toISOString(),
+      endDate: new Date(object.endDate).toISOString(),
+    };
 
-        Use "N/A" for missing string fields and 0 for missing numeric fields.
-        Round all numeric values to two decimal places.
-        The interestRate should be the monthly rate, expressed as a percentage.
+    revalidatePath("/emi");
 
-        Today's date is ${today}. Use this date for calculating the amount paid so far.
-
-        Provide the extracted and calculated data in the specified JSON format.
-
-        PDF Text:
-        ${pdfText}`,
-        schema: EMISchema,
-        temperature: 0.2,
-      });
-
-      revalidatePath("/emi"); // Adjust this path as needed
-
-      return {
-        success: true,
-        emiData: {
-          ...object,
-          startDate: new Date(object.startDate).toISOString(),
-          endDate: new Date(object.endDate).toISOString(),
-        },
-      };
-    } catch (error) {
-      console.error("Failed to extract EMI data:", error);
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Failed to extract EMI data",
-      };
-    }
+    return emiData;
   });
