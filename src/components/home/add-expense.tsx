@@ -22,8 +22,11 @@ import { experimental_useObject as useObject } from "ai/react";
 import { formatDate } from "date-fns";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { ScrollArea } from "../ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export default function AddExpense({ data }: { data: Expense[] }) {
   const [expenses, setExpenses] = useState<Expense[]>(data);
@@ -62,7 +65,119 @@ export default function AddExpense({ data }: { data: Expense[] }) {
   });
 
   return (
-    <div className="flex flex-col w-full bg-white dark:bg-zinc-900 h-full">
+    <div className="overflow-hidden p-5 h-[calc(100vh-64px)] flex">
+      <Tabs defaultValue="overview" className="h-full w-full space-y-6">
+        <div className="space-between flex items-center">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent value="overview" className="space-y-2">
+          <Card className="col-span-4 ">
+            <CardHeader>
+              <CardTitle>Expense Overview</CardTitle>
+            </CardHeader>
+            <CardContent className="flex gap-4 ">
+              <ExpenseOverview
+                object={object}
+                form={form}
+                handleOnSubmit={handleOnSubmit}
+                expenses={expenses}
+                isLoading={isLoading}
+              />
+              <div className="w-2/3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Transactions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Total Balance
+                          </CardTitle>
+                          {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">₹45,231.89</div>
+                          <p className="text-xs text-muted-foreground">
+                            +20.1% from last month
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Expenses
+                          </CardTitle>
+                          {/* <Receipt className="h-4 w-4 text-muted-foreground" /> */}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">₹3,352.40</div>
+                          <p className="text-xs text-muted-foreground">
+                            +4.5% from last month
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Income
+                          </CardTitle>
+                          {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">₹8,700.00</div>
+                          <p className="text-xs text-muted-foreground">
+                            +2.3% from last month
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Active Loans
+                          </CardTitle>
+                          {/* <CreditCard className="h-4 w-4 text-muted-foreground" /> */}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">3</div>
+                          <p className="text-xs text-muted-foreground">
+                            2 personal, 1 home loan
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="transactions" className="space-y-4"></TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+const ExpenseOverview = ({
+  form,
+  handleOnSubmit,
+  expenses,
+  isLoading,
+  object,
+}: {
+  form: UseFormReturn<InputExpense>;
+  handleOnSubmit: (data: InputExpense) => void;
+  expenses: Expense[];
+  isLoading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  object: any;
+}) => {
+  return (
+    <div className="flex flex-col w-1/3 bg-white dark:bg-zinc-900 rounded-lg p-3">
       <div className="sticky top-0 bg-white dark:bg-zinc-900 z-10 pb-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
@@ -89,9 +204,9 @@ export default function AddExpense({ data }: { data: Expense[] }) {
         </Form>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <ScrollArea className="h-[calc(100vh-320px)]">
         {expenses?.length > 0 || isLoading ? (
-          <div className="flex flex-col gap-2 items-center">
+          <div className="flex flex-col gap-2 items-center ">
             {isLoading && object?.expense && (
               <div className="opacity-50">
                 <ExpenseView expense={object.expense} />
@@ -112,15 +227,16 @@ export default function AddExpense({ data }: { data: Expense[] }) {
             </div>
           </div>
         )}
-      </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent pointer-events-none"></div>
+      </ScrollArea>
     </div>
   );
-}
+};
 
 const ExpenseView = ({ expense }: { expense: Expense | PartialExpense }) => {
   return (
     <motion.div
-      className="flex flex-col gap-2 px-4 w-[500px]"
+      className="flex flex-col gap-2 px-4 w-full min-w-full"
       initial={{ opacity: 0.4 }}
       animate={{ opacity: 1 }}
     >

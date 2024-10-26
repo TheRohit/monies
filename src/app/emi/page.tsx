@@ -1,18 +1,20 @@
-"use client";
+import EMIDashboard from "@/components/emi/emi-dashboard";
+import { getEMIsForUser } from "@/lib/db/queries";
+import { auth } from "@clerk/nextjs/server";
+import React, { Suspense } from "react";
 
-import { UploadModal } from "@/components/upload-modal";
-import { useState } from "react";
-import { EMIData } from "../actions/extract-emi-data";
-
-export default function Page() {
-  const [emiData, setEMIData] = useState<EMIData | null>(null);
-
-  console.log(emiData);
-
+export default async function Page() {
+  const { userId } = await auth();
+  if (!userId) {
+    return;
+  }
+  const emis = await getEMIsForUser(userId);
   return (
-    <div>
-      {/* <EMIForm /> */}
-      <UploadModal maxSize={2 * 1024 * 1024} setEMIData={setEMIData} />
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="overflow-hidden p-5 h-[calc(100vh-64px)] flex">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <EMIDashboard data={emis as any} />
+      </div>
+    </Suspense>
   );
 }

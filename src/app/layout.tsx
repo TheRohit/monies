@@ -41,7 +41,7 @@ export default function RootLayout({
             <Toaster />
             <div className="bg-white dark:bg-zinc-900 grid h-screen grid-rows-[auto,1fr] font-[family-name:var(--font-geist-sans)]">
               <MainNav />
-              <main className="overflow-y-scroll ">{children}</main>
+              <main className="overflow-y-scroll">{children}</main>
             </div>
           </ThemeProvider>
         </body>

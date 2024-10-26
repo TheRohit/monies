@@ -28,3 +28,19 @@ export const EMISchema = z.object({
 });
 
 export type EMISchemaType = z.infer<typeof EMISchema>;
+
+export interface EMI {
+  id: number;
+  userId: string;
+  emiName: string;
+  totalAmount: number;
+  remainingAmount: number;
+  monthlyEmiAmount: number;
+  monthlyDueDate: number;
+  startDate: Date;
+  endDate: Date;
+  interestRate: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
