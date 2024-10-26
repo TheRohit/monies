@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import React, { Suspense } from "react";
 
 export default async function Page() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) {
     return;
   }
@@ -12,7 +12,8 @@ export default async function Page() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="overflow-hidden p-5 h-[calc(100vh-64px)] flex">
-        <EMIDashboard data={emis} />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <EMIDashboard data={emis as any} />
       </div>
     </Suspense>
   );

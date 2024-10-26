@@ -173,6 +173,7 @@ const ExpenseOverview = ({
   handleOnSubmit: (data: InputExpense) => void;
   expenses: Expense[];
   isLoading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   object: any;
 }) => {
   return (

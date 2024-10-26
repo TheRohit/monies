@@ -1,5 +1,6 @@
 "use client";
 
+import { EMI } from "@/app/actions/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,11 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { format } from "date-fns";
-import { Calendar, Clock, DollarSign, Info } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  IndianRupee,
+  IndianRupeeIcon,
+  Info,
+} from "lucide-react";
 import { DataTable } from "../data-table";
+import { UploadModal } from "../upload-modal";
 import { columns } from "./emi.config";
-import { EMI } from "@/app/actions/types";
 
 export default function EMIDashboard({ data }: { data: EMI[] }) {
   const getUpcomingEMIs = () => {
@@ -34,11 +40,18 @@ export default function EMIDashboard({ data }: { data: EMI[] }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Active EMIs</CardTitle>
-            <CardDescription>
-              Overview of your current EMI commitments
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col gap-2">
+                <CardTitle>Active EMIs</CardTitle>
+                <CardDescription>
+                  Overview of your current EMI commitments
+                </CardDescription>
+              </div>
+              {/* <EMIForm /> */}
+              <UploadModal setEMIData={() => {}} />
+            </div>
           </CardHeader>
+
           <CardContent>
             <DataTable columns={columns} data={data} />
           </CardContent>
@@ -64,7 +77,7 @@ export default function EMIDashboard({ data }: { data: EMI[] }) {
                       </p>
                     </div>
                     <Button variant="outline">
-                      <DollarSign className="mr-2 h-4 w-4" />
+                      <IndianRupee className="mr-2 h-4 w-4" />
                       Pay ₹{emi?.monthlyEmiAmount}
                     </Button>
                   </li>
@@ -81,7 +94,7 @@ export default function EMIDashboard({ data }: { data: EMI[] }) {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center">
-                  <DollarSign className="mr-2 h-5 w-5 text-muted-foreground" />
+                  <IndianRupeeIcon className="mr-2 h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">Total EMI Amount</p>
                     <p className="text-2xl font-bold">
